@@ -11,7 +11,7 @@ var isDef = (e)=> !(e == null  || e == undefined);
 
 // });
 
-async function insert({ name, email, plain_password, id }){
+async function insert(name, email, plain_password, id){
     return new Promise(res=>{
         db.findOne({email: email}, async (err, d)=>{
             if(err) res({status: 404, data: 'unexpected problem' });
@@ -42,11 +42,3 @@ module.exports = {
     add: insert,
     log
 }
-
-insert({
-    name: "Mrinmoy Mondal",
-    email: "mm@gmail.com",
-    plain_password: "12345678"
-}).then(e=>{
-    console.log(e);
-})

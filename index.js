@@ -5,8 +5,23 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 // const http = require('http');
 const app = express();
+var cors = require('cors');
 
 const { io } = require("socket.io-client");
+
+var allowlist = ['https://mrinmoymondalreal-automatic-fortnight-jww5qxvq9q52pv64-3000.preview.app.github.dev']
+
+var corsOptionsDelegate = function (req, callback) {
+  var corsOptions;
+  if (allowlist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false } // disable CORS for this request
+  }
+  callback(null, corsOptions) // callback expects two parameters: error and options
+}
+
+app.use(cors(corsOptionsDelegate));
 
 var keys = [];
 
@@ -16,7 +31,7 @@ soc.on("keys", (d)=>{
   keys.push(d);
 })
 
-const PORT = process.env.PORT || 2000;
+const PORT = process.env.PORT || 4000;
 // const server = http.createServer(app);
 const JWT_TOKEN = "JWT_TOKEN";
 
