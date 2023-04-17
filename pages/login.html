@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="http://localhost:8000/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io("http://localhost:8000");
+        if(getDeviceID() == null){fetchID()}
+        else{joinID();}
+        function fetchID(){
+            socket.on("device_id", (msg)=>{
+                if(msg.status == 200) setDeviceID(msg.id);
+                else setDeviceID("Error");
+            })
+        }
+        function joinID(){
+            socket.emit("join_id", getDeviceID());
+        }
+        function setDeviceID(id){
+            getDeviceID() == null ? localStorage.setItem("device_id", id) : null;
+        }
+        function getDeviceID(){
+            return localStorage.getItem("device_id");
+        }
+        function initLogin(callback, error){
+            if(getDeviceID() == null) return;
+            socket.on("waiting_re", (d)=>{
+                console.log(d);
+            });
+            socket.on("pro_done", (d)=>{
+                if(d.status == 200){callback(d.data);}
+                else{error(d.data);}
+            });
+        }
+    </script>
+</head>
+<body onload="connect()">
+    <form action="">
+        <div>
+            <img src="" alt="" width="500" height="500">
+            <div class="number">
+                <button type="button" value="1">90</button>
+                <button type="button" value="2">80</button>
+                <button type="button" value="3">110</button>
+            </div>
+        </div>
+        <input type="submit" value="SignUp">
+    </form>
+    <script>
+        async function connect(){
+            let headers = new Headers();
+
+            headers.append('Content-Type', 'application/json');
+
+            headers.append('Access-Control-Allow-Origin', '*');
+            var resp = await fetch("http://localhost:8000/l/getQR", {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                    user_id: '2cbeba5e-bf2b-4034-92a7-2cbb6b28da8e',
+                    password: '12345678',
+                    device_id: getDeviceID(),
+                })
+            });
+            resp = await resp.json();
+            if(resp.status == 200){
+                // document.querySelector(".connect").style.display = "block";
+                document.querySelector("img").src = resp.msg;
+                initLogin(async (d)=>{
+                    console.log("process done");
+                    resp = await fetch("/a/login", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            id: d
+                        })
+                    });
+                    resp = await resp.json();
+                    // if(resp.status == 200) window.location = "/user";
+                    console.log(d);
+                    console.log("Login recieved done", "Redirecting to dashboard");
+                }, (d)=>{
+                    console.log(d);
+                });
+            }
+        }
+    </script>
+    <script>
+        // getDeviceID()
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://8080-cs-7af7cf00-6009-4b3a-87be-d2dfee15f900.cs-asia-southeast1-bool.cloudshell.dev/socket.io.js"></script>
+    <script>
+        var socket = io("https://8080-cs-7af7cf00-6009-4b3a-87be-d2dfee15f900.cs-asia-southeast1-bool.cloudshell.dev");
+        if(getDeviceID() == null){fetchID()}
+        else{joinID();}
+        function fetchID(){
+            socket.on("device_id", (msg)=>{
+                if(msg.status == 200) setDeviceID(msg.id);
+                else setDeviceID("Error");
+            })
+        }
+        function joinID(){
+            socket.emit("join_id", getDeviceID());
+        }
+        function setDeviceID(id){
+            getDeviceID() == null ? localStorage.setItem("device_id", id) : null;
+        }
+        function getDeviceID(){
+            return localStorage.getItem("device_id");
+        }
+        function initRegister(callback, error){
+            if(getDeviceID() == null) return;
+            socket.on("waiting_re", (d)=>{
+                console.log(d);
+            });
+            socket.on("pro_done", (d)=>{
+                if(d.status == 200){callback(d.data);}
+                else{error(d.data);}
+            });
+        }
+    </script>
+</head>
+<body>
+    <form action="">
+        <input type="text" id="name" placeholder="name"><br>
+        <input type="text" id="email" placeholder="email"><br>
+        <input type="text" id="password" placeholder="password"><br>
+        <button type="button" onclick="connect()">Connect With App</button><br>
+        <div class="connect" style="display: none">
+            <img src="" alt="" width="500" height="500">
+            <div class="number">
+                <button type="button" value="1">90</button>
+                <button type="button" value="2">80</button>
+                <button type="button" value="3">110</button>
+            </div>
+        </div>
+        <input type="submit" value="SignUp">
+    </form>
+    <script>
+        var f = [document.querySelector("#name"),
+        document.querySelector("#email"),
+        document.querySelector("#password")];
+        function check(){
+            var flag = 0;
+            for(var value of f){
+                if(value.value.trim().length <= 0) flag = 1;
+            }
+            if(flag = 1){ console.log("fill details"); return 0; }
+            else {return 1;}
+        }
+        async function connect(){
+            if (check() == 1) return;
+            let headers = new Headers();
+
+            headers.append('Content-Type', 'application/json');
+
+            headers.append('Access-Control-Allow-Origin', '*');
+            var resp = await fetch("https://8000-cs-7af7cf00-6009-4b3a-87be-d2dfee15f900.cs-asia-southeast1-bool.cloudshell.dev/r/getQR", {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                    user_id: 'bf411ada-327c-4ebd-97ee-e956d2c6d025',
+                    password: '12345678',
+                    device_id: getDeviceID(),
+                })
+            });
+            resp = await resp.json();
+            if(resp.status == 200){
+                document.querySelector(".connect").style.display = "block";
+                document.querySelector("img").src = resp.msg;
+                initRegister(async (d)=>{
+                    console.log("process done");
+                    resp = await fetch("/a/signup", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            name: f[0].value,
+                            password: f[2].value,
+                            email: f[1].value,
+                            id: d
+                        })
+                    });
+                    resp = await resp.json();
+                    console.log(d);
+                    console.log("Register done", "Redirecting to login");
+                }, (d)=>{
+                    console.log(d);
+                });
+            }
+        }
+    </script>
+    <script>
+        // getDeviceID()
+    </script>
+</body>
+</html>

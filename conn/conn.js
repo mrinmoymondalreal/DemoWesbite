@@ -1,0 +1,1 @@
+require('mongoose').connect('mongodb+srv://class-user:wZpqcBG9OO2FXAHl@cluster0.78cec.mongodb.net/credsafe');
