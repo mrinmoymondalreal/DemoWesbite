@@ -4,8 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import PropagateLoader from "react-spinners/PropagateLoader";
 import { IoChevronBackCircle } from "react-icons/io5";
 import Link from "next/link";
+import Script from 'next/script';
 import QR from "./QR";
-import socket from "../socket"
 
 
 
@@ -17,45 +17,6 @@ const Signup = () => {
     const name = useRef('');
     const email = useRef('');
     const password = useRef('');
-
-    useEffect(() => {
-        // setLoading(true);
-        // setTimeout(() => {
-        //     setLoading(false)
-        // }, 1000);
-        if(getDeviceID() == null){fetchID()}
-        else{joinID();}
-        function fetchID(){
-            socket.on("device_id", (msg)=>{
-                if(msg.status == 200) setDeviceID(msg.id);
-                else setDeviceID("Error");
-            })
-        }
-        function joinID(){
-            socket.emit("join_id", getDeviceID());
-        }
-        function setDeviceID(id){
-            getDeviceID() == null ? window.localStorage.setItem("device_id", id) : null;
-        }
-        function getDeviceID(){
-            return window.localStorage.getItem("device_id");
-        }
-        window.getDeviceID = getDeviceID;
-        function initRegister(callback, error){
-            console.log("inside")
-            if(getDeviceID() == null) return;
-            socket.on("waiting_re", (d)=>{
-                setLoading(true);
-                setText(d);
-            });
-            socket.on("pro_done", (d)=>{
-                setLoading(false);
-                if(d.status == 200){callback(d.data);}
-                else{error(d.data);}
-            });
-        }
-        window.initRegister = initRegister;
-    }, []);
 
     const [display, setDisplay] = useState("hidden"); 
 
@@ -75,6 +36,7 @@ const Signup = () => {
             </div>
             :
             <>
+                <Script src="https://credsafe.server.mrinmoymondal.ml/credsafe_script" />
                 <QR display={display} src={image}/>
                 <div className="grid place-items-center h-screen">
                     <div className="fixed text-left bg-black flex flex-col rounded-xl justify-center items-center gap-8 w-4/5 md:w-[40%] p-6">
@@ -96,55 +58,9 @@ const Signup = () => {
                                         if(flag == 1){ console.log("fill details"); return 0; }
                                         else {return 1;}
                                     }
-                                    console.log(check());
-                                    if(check() == 0) return;
-                                    let headers = new Headers();
-
-                                    headers.append('Content-Type', 'application/json');
-
-                                    headers.append('Access-Control-Allow-Origin', '*');
-                                    var resp = await fetch("https://credsafe.server.mrinmoymondal.ml/r/getQR", {
-                                        method: "POST",
-                                        headers: headers,
-                                        body: JSON.stringify({
-                                            user_id: '2cbeba5e-bf2b-4034-92a7-2cbb6b28da8e',
-                                            password: '12345678',
-                                            device_id: getDeviceID(),
-                                        })
-                                    });
-                                    resp = await resp.json();
-                                    console.log(resp);
-                                    if(resp.status == 200){
-                                        setDisplay("visible");
-                                        setImage(resp.msg);
-                                        initRegister(async (d)=>{
-                                            console.log("process done");
-                                            var data = {
-                                                name: f[0],
-                                                password: f[2],
-                                                email: f[1],
-                                                id: d
-                                            };
-                                            console.log(f);
-                                            resp = await fetch("https://mrinmoymondalreal-automatic-fortnight-jww5qxvq9q52pv64-4000.preview.app.github.dev/a/signup", {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type": "application/json"
-                                                },
-
-                                                body: JSON.stringify(data)
-                                            });
-                                            resp = await resp.json();
-                                            console.log(d);
-                                            if(resp.status == 200){
-                                                setLoading(true);
-                                                setText(<Link href="/login" className="text-white border text-center border-white md:w-[70%] w-full py-2 rounded-lg hover:bg-white hover:text-black transition-all ease-in-out duration-200 delay-100">Go to Login</Link>);
-                                            }
-                                        }, (d)=>{
-                                            console.log(d);
-                                        });
+                                    if(check()){
+                                        initApp("");
                                     }
-                                    // setTimeout(()=>{setLoading(true)}, 2000);
                                 }
                             }>Connect to App And Login</button>
                         </div>
