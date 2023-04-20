@@ -38,12 +38,12 @@ const JWT_TOKEN = "JWT_TOKEN";
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// app.get("/signup", (req, res)=>{
-//   res.sendFile(path.join(__dirname, "pages/signup.html"));
-// });
-// app.get("/login", (req, res)=>{
-//   res.sendFile(path.join(__dirname, "pages/login.html"));
-// });
+app.get("/signup", (req, res)=>{
+  res.sendFile(path.join(__dirname, "signup.html"));
+});
+app.get("/login", (req, res)=>{
+  res.sendFile(path.join(__dirname, "login.html"));
+});
 
 
 app.post('/a/signup', async (req, res)=>{
