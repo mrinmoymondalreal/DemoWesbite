@@ -26,12 +26,14 @@ app.use(cors(corsOptionsDelegate));
 var keys = [];
 
 const soc = io.connect("https://credsafe.server.mrinmoymondal.ml");
-soc.emit("join_id", "2cbeba5e-bf2b-4034-92a7-2cbb6b28da8e");
+soc.emit("join_id", {token:"f9442b41-31cc-4cbe-8c92-1d588b992cba", user_id: "f9442b41-31cc-4cbe-8c92-1d588b992cba"});
+soc.on("join_id", (d)=>{console.log(d)})
 soc.on("keys", (d)=>{
+
   keys.push(d);
 })
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 // const server = http.createServer(app);
 const JWT_TOKEN = "JWT_TOKEN";
 
@@ -39,19 +41,43 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get("/signup", (req, res)=>{
-  res.sendFile(path.join(__dirname, "signup.html"));
+  res.sendFile(path.join(__dirname, "frontend2/signup.html"));
+});
+app.get("/", (req, res)=>{
+  res.sendFile(path.join(__dirname, "frontend2/index.html"));
 });
 app.get("/login", (req, res)=>{
-  res.sendFile(path.join(__dirname, "login.html"));
+  res.sendFile(path.join(__dirname, "frontend2/login.html"));
 });
 
 
 app.post('/a/signup', async (req, res)=>{
   const { name, password, email, id } = req.body;
-  // console.log(req.body);
+  
   try{
     const f = await user.add(name, email, password, id);
-    res.status(f.status).send(f);
+    const fetch = require('node-fetch');
+    if(f.status == 200) {
+      var g = await fetch('https://credsafe.server.mrinmoymondal.ml/confirm', {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+              status: 1,
+              user_id: "f9442b41-31cc-4cbe-8c92-1d588b992cba",
+              id: id,
+              password: "12345678"
+          })
+      });
+      console.log(id);
+      g = await g.json();
+      if(g.status == 200){
+        res.status(f.status).send(f)
+      }else{
+        res.status(400).send({ status: 400, data: "unexpected Problem" });
+      }
+    }else{
+      res.status(f.status).send(f);
+    }
   }catch(err){
     console.log(err);
     res.status(500).send({data: 'internal server error'});
@@ -64,12 +90,11 @@ app.post('/a/login', async (req, res)=>{
     console.log(keys[i]);
     try{
       data = (jwt.verify(req.body.id, keys[i]))
-      console.log(data);
       if(data.id) {
         var f = await user.log({ id: data.id });
         if(f.status == 200) {
-          data = jwt.sign({  }, JWT_TOKEN)
-          flag = 1;
+          data = jwt.sign(f.data, JWT_TOKEN);
+          console.log(data);
           break;
         }
       }
@@ -78,14 +103,14 @@ app.post('/a/login', async (req, res)=>{
     }
   }
   
-  if(flag == 1){
-    res.setHeader("set-cookie", "token="+req.body.id+";");
-    res.send({ status: 200 });
+  if(data){
+    res.setHeader("set-cookie", "token="+data+";");
+    res.send({ status: 200, data });
   }else{
     res.send({ status: 400 });
   }
   
-})
+});
 
 app.listen(PORT, (e)=>{
   console.log("Working ON", `http://localhost:${PORT}`);

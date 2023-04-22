@@ -34,61 +34,73 @@
     </style>
 </head>
 <body>
-    <div class="box">
+    <!-- <div class="box">
         <form action="/">
             <input type="text" id="name" placeholder="Enter Name">
             <input type="text" id="email" placeholder="Enter Email">
             <input type="password" id="password" placeholder="Enter password">
             <input type="submit" id="button" value="Connect to App">
         </form>
-    </div>
+    </div> -->
     <script src="https://credsafe.server.mrinmoymondal.ml/credsafe_script"></script>
     <script>
-        var email = document.querySelector("#email");
-        var password = document.querySelector("#password");
-        var _name = document.querySelector("#name");
-        var form = document.querySelector("form");
+        // var email = document.querySelector("#email");
+        // var password = document.querySelector("#password");
+        // var _name = document.querySelector("#name");
+        // var form = document.querySelector("form");
 
-        var f = [email, password, _name]
+        // var f = [email, password, _name]
 
-        function check(){
-            var flag = 1;
-            for(var i = 0;i < f.length;i++){
-                if(f[i].value.trim().length <= 0){ flag = 0; break;}
-            }
-            return flag;
-        }
+        // function check(){
+        //     var flag = 1;
+        //     for(var i = 0;i < f.length;i++){
+        //         if(f[i].value.trim().length <= 0){ flag = 0; break;}
+        //     }
+        //     return flag;
+        // }
 
-        form.addEventListener("submit", async (e)=>{
-            e.preventDefault();
-            if(check() ==1){
+        // form.addEventListener("submit", async (e)=>{
+        //     e.preventDefault();
+            // if(check() ==1){
                 initApp("f9442b41-31cc-4cbe-8c92-1d588b992cba");
-                initRegister(async (d)=>{
-                    console.log(d);
-                    var resp = await fetch("/a/signup", {
+                initLogin(async (d)=>{
+                    var resp = await fetch("/a/login", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
+                            // id: d.data,
                             id: d,
-                            // id: "kfjxkgjk", 
-                            name: _name.value,
-                            password: password.value,
-                            email: email.value
                         })
                     });
                     resp = await resp.json();
                     if(resp.status == 200){
-                        alert("continue to login");
-                        window.location.href = "/login";
+                        var content = JSON.parse(atob(resp.data.split(".")[1]));
+                        alert("You are logged in welcome "+ content.name);
                     }else{
                         alert(JSON.stringify(resp));
                     }
                     console.log(d);
                 });
-            }else{
-                alert("Enter details first");
-            }
-        })
+                // initRegister(async (d)=>{
+                //     var resp = await fetch("/a/signup", {
+                //         method: "POST",
+                //         headers: { "Content-Type": "application/json" },
+                //         body: JSON.stringify({
+                //             // id: d.data,
+                //             id: "kfjxkgjk", 
+                //             name: _name.value,
+                //             password: password.value,
+                //             email: email.value
+                //         })
+                //     });
+                //     if(resp.status == 200){
+                //         alert("continue to login");
+                //         window.location.href = "/login";
+                //     }
+                //     console.log(d);
+                // });
+            // }
+        // });
     </script>
 </body>
 </html>

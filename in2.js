@@ -31,8 +31,8 @@ async function insert(name, email, plain_password, id){
 
 async function log(doc){
     return new Promise(res=>{
-        db.findOne({user_id: doc.id}, async (err, d)=>{
-            if(isDef(d)) res({status: 200});
+        db.findOne({id: doc.id}, async (err, d)=>{
+            if(isDef(d)) res({status: 200, data: d});
             res({status: 400});
         });
     });
